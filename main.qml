@@ -111,6 +111,11 @@ Item {
     iconColor: Theme.mainColor
     round: true
 
+    onPressAndHold: {
+      // Send to settings
+        configDialog.open();
+    }
+
     onClicked: {
 
       // Select the layer on which we want to write
