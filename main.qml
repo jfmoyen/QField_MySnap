@@ -1,3 +1,5 @@
+import QtCore
+
 import QtQuick
 import QtQuick.Controls
 
@@ -14,8 +16,59 @@ Item {
   property var positionSource: iface.findItemByObjectName('positionSource')
   property var dashBoard: iface.findItemByObjectName('dashBoard')
   property var overlayFeatureFormDrawer: iface.findItemByObjectName('overlayFeatureFormDrawer')
+  property var canvas: iface.mapCanvas()
 
   property var candidates: ["photo", "picture", "image", "media", "camera", "Image", "image_path"]
+
+  property var currentlyActiveLayer: dashBoard.activeLayer
+
+  ListModel { id: pointLayerPickerModel }
+
+  function populatePointLayerPicker(){
+    // From https://github.com/TyHol/Qfield_Convert_Coords/blob/main/Conversion_tools/main.qml
+    // Get point layers
+    var allLayers = canvas.mapSettings.layers;
+    var pointLayers = []
+    pointLayerPickerModel.clear()
+
+    for (var layerId in allLayers) {
+      var layer = allLayers[layerId]
+
+      if(layer &&
+          layer.geometryType &&
+          layer.geometryType() === Qgis.GeometryType.Point &&
+          layer.supportsEditing === true) {
+        pointLayers.push(layer)
+      }
+    }
+
+    // sort alphabetically
+    pointLayers.sort(function(a, b) { return a.name.localeCompare(b.name) })
+
+    // If no layers found at all, show a placeholder and bail out
+    if (pointLayers.length === 0 ) {
+      pointLayerPickerModel.append({ "name": qsTr("— no editable point layers —"), "isHeader": true })
+     // pointLayerCombo.currentIndex = 0
+      root.targetLayer = 0
+      // pointLayerName = ""
+      return
+    }
+
+    // Layers exist — add "Active Layer" as first selectable option
+    pointLayerPickerModel.append({ "name": qsTr("Active Layer"), "isHeader": false })
+
+    // Append to model
+    for (var i = 0; i < pointLayers.length; i++)
+      pointLayerPickerModel.append({ "name": pointLayers[i].name, "isHeader": false })
+  }
+
+  Connections {
+    target: overlayFeatureFormDrawer
+
+    function onClosed() {
+      dashBoard.activeLayer = currentlyActiveLayer
+    }
+  }
 
   Component.onCompleted: {
     iface.addItemToPluginsToolbar(snapButton)
@@ -59,6 +112,25 @@ Item {
     round: true
 
     onClicked: {
+
+      // Select the layer on which we want to write
+      // if the user wants to write to "active layer"
+      if(pluginSettings.targetLayerIndex===0){
+       // nothing special
+        }else{
+      // The user has selected something else
+      // Preserve this layer for restoration at the end
+        plugin.currentlyActiveLayer = dashBoard.activeLayer
+
+        // Get the target layer
+        var item = pointLayerPickerModel.get(pluginSettings.targetLayerIndex)
+        // if (item.isHeader) { currentIndex = currentIndex > 0 ? currentIndex - 1 : 0; return }
+        //pointLayerName = (currentIndex === 0) ? "" : item.name
+        var layer = qgisProject.mapLayersByName(item.name )[0]
+        dashBoard.activeLayer = layer
+      }
+
+
       dashBoard.ensureEditableLayerSelected()
 
       if (!positionSource.active || !positionSource.positionInformation.latitudeValid || !positionSource.positionInformation.longitudeValid) {
@@ -147,4 +219,53 @@ Item {
     overlayFeatureFormDrawer.state = 'Add'
     overlayFeatureFormDrawer.open()
   }
+
+  // Persistent settings — edited via the ⚙ button in QField's plugin manager
+  Settings {
+    id: pluginSettings
+    category: "mySnapPlugin"
+    property int targetLayerIndex: 0
+  }
+
+  function configure() {
+    configDialog.open()
+  }
+
+  Dialog {
+    id: configDialog
+    parent: mainWindow.contentItem
+    anchors.centerIn: parent
+    visible: false
+    modal: true
+    title: "My Snap! Plugin Settings"
+    standardButtons: Dialog.Ok | Dialog.Cancel
+
+    Column {
+      width: parent.width
+      spacing: 4
+      Text {
+        text: "Save photos to..."
+        font.pixelSize: 14
+        font.bold: true
+      }
+
+    ComboBox {
+      id: pointLayerCombo
+      currentIndex: 0
+
+      model: pointLayerPickerModel
+      textRole: "name"
+    }
+    }
+
+    onOpened: {
+      populatePointLayerPicker()
+      pointLayerCombo.currentIndex = pluginSettings.targetLayerIndex
+    }
+
+    onAccepted: {
+      pluginSettings.targetLayerIndex = pointLayerCombo.currentIndex
+    }
+  }
+
 }

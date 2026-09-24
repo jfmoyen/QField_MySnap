@@ -1,7 +1,7 @@
 [general]
-name=Snap!
+name=My Snap!
 description=Digitize points through snapping photos
-author=OPENGIS.ch
+author=OPENGIS.ch, modified by JF Moyen
 icon=icon.svg
 version=1.1
 homepage=https://www.opengis.ch/
