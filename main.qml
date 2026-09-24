@@ -71,6 +71,7 @@ Item {
   }
 
   Component.onCompleted: {
+    populatePointLayerPicker()
     iface.addItemToPluginsToolbar(snapButton)
   }
 
@@ -95,6 +96,7 @@ Item {
     
         onCanceled: {
           close()
+          dashBoard.activeLayer = currentlyActiveLayer
         }
     
         onClosed: {
