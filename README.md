@@ -23,9 +23,9 @@ of with a long press on the Snap! button in the main interface.
 
 Like all [QField plugins](https://docs.qfield.org/how-to/advanced-how-tos/plugins/#application-plugins), you can do any of the following:
 1. Download manually the plugin files and copy them to the `Android/data/ch.opengis.qfield/files/QField/plugins/mySnap` of your (Android) device (iOS users, locate the plugin directory and copy the files there!)
-2. Install from url using the following url: https://github.com/jfmoyen/QField_MySnap/blob/main/QField_MySnap.zip
+2. Install from url using the following url: https://github.com/jfmoyen/QField_MySnap/releases/download/latest/QField_MySnap.zip
 3. Install by scanninng this QRCode (this is a shortcut to the same url):
-<img src="img/qr-code.jpg" width="300" height="300">
+<img src="qr-code.jpg" width="300" height="300">
 
 In any case, do not forget to activate the plugin (go to the side dashboard -> 3 dots menu -> plugins -> local plugins -> activate using the switch)
 
