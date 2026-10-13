@@ -48,8 +48,8 @@ Item {
     // If no layers found at all, show a placeholder and bail out
     if (pointLayers.length === 0 ) {
       pointLayerPickerModel.append({ "name": qsTr("— no editable point layers —"), "isHeader": true })
-     // pointLayerCombo.currentIndex = 0
-      root.targetLayer = 0
+      pointLayerCombo.currentIndex = 0
+      // root.targetLayer = 0
       // pointLayerName = ""
       return
     }
